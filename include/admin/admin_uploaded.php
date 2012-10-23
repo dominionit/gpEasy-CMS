@@ -836,11 +836,10 @@ class admin_uploaded{
 		$base_dir = $dataDir.'/data/_uploaded';
 		$thumb_dir = $dataDir.'/data/_uploaded/image/thumbnails';
 		admin_uploaded::SetRealPath($result,$elfinder);
-
 		switch($cmd){
-
+  
 			case 'rename':
-			admin_uploaded::RenameResized($result['removed'][0],$result['added'][0]);
+			admin_uploaded::RenameResized($result['removed'][0],$result['added'][0],$result);
 			break;
 
 			case 'rm':
@@ -968,9 +967,29 @@ class admin_uploaded{
 	 * Update the name of an image in the index when renamed
 	 *
 	 */
-	function RenameResized($removed,$added){
+	function RenameResized($removed,$added,$result = NULL){
+	    global $dataDir;
 		$added_img = admin_uploaded::TrimBaseDir($added['realpath']);
 		$removed_img = admin_uploaded::TrimBaseDir($removed['realpath']);
+
+	    if ($result != NULL) { //johannes added for dir rename in image folder to sync with thumbnails
+		  if ($result['removed'][0]['mime'] == 'directory') {
+			$added_img = str_replace('\\','/',$added_img);
+			$removed_img = str_replace('\\','/',$removed_img);
+			//directory name was changed inside image but not in thumbnails
+			if ((strpos($added_img,'image/') !== FALSE) && (strpos($added_img,'image/thumbnails/') === FALSE)) { 
+				$thmbD = $dataDir.'/data/_uploaded/image/thumbnails';
+				$oldDir = $thmbD.$removed_img;
+				$newDir = $thmbD.$added_img;
+				rename($oldDir,$newDir);
+			}
+		  }	  
+		}
+		
+        //update gallery
+		admin_uploaded::UpdateGalleriesImages($added_img,$removed_img);
+		//end update galleries
+		
 		$index = array_search($removed_img,gp_resized::$index);
 		if( !$index ){
 			return false;
@@ -978,7 +997,46 @@ class admin_uploaded{
 		gp_resized::$index[$index] = $added_img;
 	}
 
-
+    function UpdateGalleriesImages($newImg,$oldImg){
+	   //used for file renames mostly, thus expect newImg and oldImg to be in format
+	   //   /image/filename.ext
+	   //thus path from data/_uploads to file
+	   global $dataDir,$config,$gp_index;
+	   if (!file_exists($dataDir.'/data/_site/galleries.php')) { return; } //no galleries setup in pages
+	   
+	    $galleries = array();
+		include $dataDir.'/data/_site/galleries.php';
+		$ext = '.'.end(explode('.', $newImg));
+		$newImgName = str_replace(' ','%20',str_replace('\\','/',$newImg));
+		$oldImgName = str_replace(' ','%20',str_replace('\\','/',$oldImg));
+		$newThmbImgName = 'image/thumbnails'.$newImgName.$ext;
+		$oldThmbImgName = 'image/thumbnails'.$oldImgName.$ext;
+		
+		foreach ($galleries as $title=>$galitem) {
+		   $file_sections = array();
+		   $meta_data = array();
+		   
+		   $file = $dataDir.'/data/_pages/'.substr($config['gpuniq'],0,7).'_'.$gp_index[$title].'.php';
+		   if (!file_exists($file)) {
+		     $file = $dataDir.'/data/_pages/'.str_replace('/','_',$title).'.php';
+		   }
+		   
+		   include $file;
+		   $changemade = false;
+		   foreach ($file_sections as $key=>$val) {
+		     if ($val['type']  == 'gallery'){
+			    $content =  $val['content'];
+				$content = str_replace($oldThmbImgName,$newThmbImgName,$content);
+				$content = str_replace($oldImgName,$newImgName,$content);
+				$file_sections[$key]['content'] = $content;
+				$changemade = true;
+			 }
+		   }
+		   if ($changemade == TRUE) {
+		     gpFiles::SaveArray($file,'meta_data',$meta_data,'file_sections',$file_sections);
+		   }	 
+		}
+	}
 	/**
 	 * Make sure the realpath value is set for elfinder arrays
 	 *

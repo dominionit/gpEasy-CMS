@@ -173,30 +173,26 @@ class elFinder {
 	 **/
 	public function __construct($opts) {
 		if (session_id() == '') {
-			session_start();
+		    register_shutdown_function('session_write_close');
+//			session_start();
 		}
-
 		$this->time  = $this->utime();
 		$this->debug = (isset($opts['debug']) && $opts['debug'] ? true : false);
 		
 		setlocale(LC_ALL, !empty($opts['locale']) ? $opts['locale'] : 'en_US.UTF-8');
-
 		// bind events listeners
 		if (!empty($opts['bind']) && is_array($opts['bind'])) {
 			foreach ($opts['bind'] as $cmd => $handler) {
 				$this->bind($cmd, $handler);
 			}
 		}
-
 		if (!isset($opts['roots']) || !is_array($opts['roots'])) {
 			$opts['roots'] = array();
 		}
-
 		// check for net volumes stored in session
 		foreach ($this->getNetVolumes() as $root) {
 			$opts['roots'][] = $root;
 		}
-
 		// "mount" volumes
 		foreach ($opts['roots'] as $i => $o) {
 			$class = 'elFinderVolume'.(isset($o['driver']) ? $o['driver'] : '');
@@ -219,7 +215,6 @@ class elFinder {
 				$this->mountErrors[] = 'Driver "'.$class.'" does not exists';
 			}
 		}
-
 		// if at least one redable volume - ii desu >_<
 		$this->loaded = !empty($this->default);
 	}
@@ -418,7 +413,12 @@ class elFinder {
 	 * @author Dmitry (dio) Levashov
 	 */
 	protected function getNetVolumes() {
-		return isset($_SESSION['elFinderNetVolumes']) && is_array($_SESSION['elFinderNetVolumes']) ? $_SESSION['elFinderNetVolumes'] : array();
+		if (session_id() == '') {
+			session_start();
+		}
+		$result = isset($_SESSION['elFinderNetVolumes']) && is_array($_SESSION['elFinderNetVolumes']) ? $_SESSION['elFinderNetVolumes'] : array();
+		session_write_close();
+		return $result;
 	}
 
 	/**
@@ -429,7 +429,11 @@ class elFinder {
 	 * @author Dmitry (dio) Levashov
 	 */
 	protected function saveNetVolumes($volumes) {
+		if (session_id() == '') {
+			session_start();
+		}
 		$_SESSION['elFinderNetVolumes'] = $volumes;
+		session_write_close();
 	}
 
 	/***************************************************************************/
