@@ -1586,7 +1586,7 @@ class common{
 	function GetConfig(){
 		global $config, $gp_index, $dataDir, $gp_menu;
 
-		require($dataDir.'/data/_site/config.php');
+        require($dataDir.'/data/_site/'.common::get_device_configFile());
 		if( !is_array($config) ){
 			common::stop();
 		}
@@ -1672,7 +1672,7 @@ class common{
 		$gp_index = array();
 
 		$pages = array();
-		require($dataDir.'/data/_site/pages.php');
+		require($dataDir.'/data/_site/'.common::get_device_pagesFile());
 		$GLOBALS['fileModTimes']['pages.php'] = $fileModTime;
 		$gpLayouts = $pages['gpLayouts'];
 
@@ -2557,6 +2557,225 @@ class common{
 		includeFile('tool/editing.php');
 		return gp_edit::AutoCompleteValues($GetUrl,$options);
 	}
+	
+/**
+	* function to determine what device type is accessing the page and if there is a seperate config setup for it 
+	* 
+	*/
+	function get_device_configFile($validate_configFile_exist = true){
+	  global $dataDir;
+	  
+	  //Is it a mobile or normal pc ?
+	  $devType = common::getDeviceType();
+
+      if($devType == 'mobile') {
+	    //is a mobile device..see if have own config for this device group.
+		if ($validate_configFile_exist) {
+		  if (file_exists($dataDir.'/data/_site/config_mobile.php')) {
+  		    return 'config_mobile.php';
+		  } else {
+		     return 'config.php';
+          }		  
+		} else {
+		   return 'config_mobile.php';
+		}
+	  } else if ($devType == 'tablet') {
+	    //is a tablet type device..see if have own config for this device group.
+		if ($validate_configFile_exist) {
+		  if (file_exists($dataDir.'/data/_site/config_tablet.php')) {
+  		    return 'config_tablet.php';
+		  } else {
+		     return 'config.php';
+          }		  
+		} else {
+		   return 'config_tablet.php';
+		}
+      } else {
+	    //normal pc, load default config
+		return 'config.php';
+	  }
+	}
+	
+	/**
+	* function to determine what device type is accessing the page and if there is a seperate pages setup for it 
+	* 
+	*/
+	function get_device_pagesFile($validate_pagesFile_exist = true){
+	  global $dataDir;
+	  
+	  //Is it a mobile or normal pc ?
+	  $devType = common::getDeviceType();
+
+      if($devType == 'mobile') {
+	    //is a mobile device..see if have own config for this device group.
+		if ($validate_pagesFile_exist) {
+		  if (file_exists($dataDir.'/data/_site/pages_mobile.php')) {
+  		    return 'pages_mobile.php';
+		  } else {
+		     return 'pages.php';
+          }		  
+		} else {
+		   return 'pages_mobile.php';
+		}
+	  } else if ($devType == 'tablet') {
+	    //is a tablet type device..see if have own config for this device group.
+		if ($validate_pagesFile_exist) {
+		  if (file_exists($dataDir.'/data/_site/pages_tablet.php')) {
+  		    return 'pages_tablet.php';
+		  } else {
+		     return 'pages.php';
+          }		  
+		} else {
+		   return 'pages_tablet.php';
+		}
+      } else {
+	    //normal pc, load default config
+		return 'pages.php';
+	  }
+	}
+	
+	/*
+	* Returns the device type connecting to the webpage
+	*
+	*/
+	function getDeviceType(){ 
+	     if (isset($_COOKIE['device_emulate'])) {
+		   return $_COOKIE['device_emulate'];
+		 }
+	
+	 //Is it a mobile or normal pc ?
+	  $mobilegroup = 'alcatel|amoi|avantgo|blackberry|benq|cell|cricket|docomo|elaine|htc|iemobile|iphone|ipad|ipaq|ipod|j2me|java|midp|mini|mmp|mobi|motorola|nec-|nokia|palm|panasonic|philips|phone|sagem|sharp|sie-|smartphone|sony|symbian|t-mobile|telus|up\.browser|up\.link|vodafone|wap|webos|wireless|xda|xoom|zte';
+	  $tabletgroup = 'android|benq|ipad|ipaq|rim tablet|tablet';
+
+      if(preg_match("/($mobilegroup)/i", $_SERVER['HTTP_USER_AGENT'])) {
+	    // error_log('mobile deteceted: '.$_SERVER['HTTP_USER_AGENT']);
+	     return 'mobile';
+	  } else if(preg_match("/($tabletgroup)/i", $_SERVER['HTTP_USER_AGENT'])) {
+	   // error_log('tablet deteceted: '.$_SERVER['HTTP_USER_AGENT']);
+	    return 'tablet';
+	  } else {
+	    //error_log('pc deteceted : '.$_SERVER['HTTP_USER_AGENT']);
+	    return 'pc';
+	  }
+	}
+	
+	/*
+	*
+	*
+	*/
+	function createRequiredConfigandPagesFiles(){
+	  //This needs to make a copy of the current config and pages files if the do not exist for mobile or tablet yet
+	  // and has been configured as required.
+	  global $config,$dataDir;
+	  if ($config['mobile_device_config'] == TRUE) {
+	    if (!file_exists($dataDir.'/data/_site/pages_mobile.php')) {
+		  copy($dataDir.'/data/_site/pages.php',$dataDir.'/data/_site/pages_mobile.php');
+		}
+		if (!file_exists($dataDir.'/data/_site/config_mobile.php')) {
+		  copy($dataDir.'/data/_site/config.php',$dataDir.'/data/_site/config_mobile.php');
+		}
+      }	
+	  if ($config['tablet_device_config'] == TRUE) {
+	     if (!file_exists($dataDir.'/data/_site/pages_tablet.php')) {
+		   copy($dataDir.'/data/_site/pages.php',$dataDir.'/data/_site/pages_tablet.php');
+		 }
+		 if (!file_exists($dataDir.'/data/_site/config_tablet.php')) {
+		   copy($dataDir.'/data/_site/config.php',$dataDir.'/data/_site/config_tablet.php');
+		 }
+	  }
+	}
+
+    function DeviceSelector(){
+       global $config;
+	
+  	  $forceSelection = isset($_GET['device_type'])?$_GET['device_type']:'';
+	  $devT = ($forceSelection == '')?common::getDeviceType():$forceSelection;
+	  
+	  $pc = ($devT=='pc')?"selected='selected'":'';
+	  $mobile = ($devT=='mobile')?"selected='selected'":'';
+	  $tablet = ($devT=='tablet')?"selected='selected'":'';
+	  
+	  $tmpS = "<option $pc>pc</option>";
+	  if (isset($config['mobile_device_config']) && ($config['mobile_device_config'] == TRUE)) {
+	    $tmpS .= "<option $mobile >mobile</option>";
+	  }
+	  if (isset($config['tablet_device_config']) && ($config['tablet_device_config'] == TRUE)) {
+	    $tmpS .= "<option $tablet>tablet</option>";
+	  }
+		echo "<form action='".common::GetUrl('Admin_Theme_Content')."' method='get' ><input type='hidden' name='cmd' value='setdevtype'><p>Active Device Type : <select name='device_type'>".$tmpS."</select> <input type='submit' value='Active'></p></form>";
+	}
+	
+	function setActiveDevice($device = 'pc'){
+		  gpsession::cookie('device_emulate',$device); 
+		  message('Device '.$device.' was Activated, <a href="" name="gp_refresh">Refresh this page</a> to see new config.');
+	}
+	
+	/*
+	*  Will save the new page save to all devices config files that exist.
+	   Note : It does the save regardless if the device is active or not, if the config file exist, it gets save to him.
+	*/
+	function SavePagesforAllDevices($titles,$index){
+	  global $dataDir;
+	  //We dont use global config variables here for we want to pull each file in seperatly and use his config again
+	  $dev_list = array('pc','mobile','tablet');
+	  $active_device = common::getDeviceType(); //current device will be ignored as it will get saved to automatically
+	  
+	  foreach ($dev_list as $val) {
+	    if ($val == $active_device) { continue; }
+		
+		$pages = array();
+		$fname = $dataDir."/data/_site/pages_$val.php";
+		if (file_exists($fname)) {
+			include $fname;
+		} else if (($val == 'pc') && (file_exists($dataDir."/data/_site/pages.php")))  {
+		  $fname = $dataDir."/data/_site/pages.php";
+		  include $fname;
+		} else {
+		  continue;
+		}
+
+	    $pages['gp_index'] = $index;
+	    $pages['gp_titles'] = $titles;
+        if( !gpFiles::SaveArray($fname,'pages',$pages) ){
+		   return false;
+        }
+	  }
+	  return true;
+	}
+	
+/*
+	*  Will save the config save to all devices config files that exist.
+	   Note : It does the save regardless if the device is active or not, if the config file exist, it gets save to him.
+	   This is meant to keep the Addons in Sync with each other
+	*/
+	function SaveConfigforAllDevices($gadgets,$admin_links,$addons){
+	  global $dataDir;
+	  //We dont use global config variables here for we want to pull each file in seperatly and use his config again
+	  $dev_list = array('pc','mobile','tablet');
+	  $active_device = common::getDeviceType(); //current device will be ignored as it will get saved to automatically
+	  
+	  foreach ($dev_list as $val) {
+	    if ($val == $active_device) { continue; }
+		
+        $config = array();
+		$fname = $dataDir."/data/_site/config_$val.php";
+		if (file_exists($fname)) {
+			include $fname;
+		} else if (($val == 'pc') && (file_exists($dataDir."/data/_site/config.php")))  {
+		  $fname = $dataDir."/data/_site/config.php";
+		  include $fname;
+		} else {
+		  continue;
+		}
+	    $config['gadgets'] = $gadgets;
+		$config['admin_links'] = $admin_links;
+		$config['addons'] = $addons;
+        if( !gpFiles::SaveArray($fname,'config',$config) ){
+	      return false;
+		}
+	  }
+	  return true;
+	}	
 }
 
 

@@ -510,5 +510,7 @@ continue using your old password.</p>',
 'restore_backup' => 'Restore Backup',
 '_characters' => '%s characters',
 'hide_menu_hover_text' => 'Hide menu hover text',
+'mobile_device_config' => 'Mobile Device Config',
+'tablet_device_config' => 'Tablet Device Config',
 
 );
