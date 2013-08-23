@@ -1,0 +1,10 @@
+#Note this is a registration file for a mp3 extention. 
+#do not change the case of the key's or names as it is used internally in a array
+#just add your values to them for registration.
+name=Dr Player - Dev Reactor
+screenshot=drplayer.jpg
+description=DR Player from devreactor.com
+classname=DominionMp3Player_DrPlayer
+filename=dominion-mp3-drplayer-extend.php
+author=Dev Reactor
+version=0.1

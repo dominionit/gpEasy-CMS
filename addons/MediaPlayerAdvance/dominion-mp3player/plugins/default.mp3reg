@@ -1,0 +1,10 @@
+#Note this is a registration file for a mp3 extention. 
+#do not change the case of the key's or names as it is used internally in a array
+#just add your values to them for registration.
+name=Default MP3 Player
+screenshot=default.jpg
+description=The default mp3 player used for gpEasy
+classname=DominionMp3Player_DefaultPlayer
+filename=dominion-mp3-default-extend.php
+author=Johannes Pretorius
+version=0.1
