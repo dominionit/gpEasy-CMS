@@ -1,6 +1,6 @@
-#Note this is a registration file for a mp3 extention. 
-#do not change the case of the key's or names as it is used internally in a array
-#just add your values to them for registration.
+;Note this is a registration file for a mp3 extention. 
+;do not change the case of the key's or names as it is used internally in a array
+;just add your values to them for registration.
 name=Dr Player - Dev Reactor
 screenshot=drplayer.jpg
 description=DR Player from devreactor.com

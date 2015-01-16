@@ -8,7 +8,7 @@
 */
 defined('is_running') or die('Not an entry point...');
 
-function dit_mediaplayeradv_prep_headers($js_files){
+function dit_mediaplayeradv_prep_headers(){ //$js_files
   global $addonPathCode,$addonRelativeCode;
   $pluginBasePath = $addonRelativeCode."/dominion-mp3player/player/";
   //$pluginPath = $SITEURL."plugins/dominion-mp3player/player/";

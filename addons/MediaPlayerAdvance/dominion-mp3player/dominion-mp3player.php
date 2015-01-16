@@ -50,28 +50,33 @@ class DominionMp3Player {
   } 
   
    private function playerAdd($targetFile,$bgColor){
+       //error_log('TARGET FILE : '.print_r($targetFile,true));
 		global $addonPathCode,$addonRelativeCode;
 		global $dit_ap_playerID;
 		if (empty($dit_ap_playerID)) {
 		  $dit_ap_playerID  = 1;
 		}
 		// Get next player ID 
-        require_once($addonPathCode.'/dominion-mp3player/plugins/'.$this->activeExtendFileName);
-		
-        $pluginBasePath = $addonRelativeCode."/dominion-mp3player/player/";
-        global  $dataDir,$dirPrefix;
-        $mediaDir = $dataDir.'/data/_uploaded/media/';		  //JI?HaNNEs TRKE VAN LEER
-		$schema = ( isset($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) == 'on' ) ? 'https://' : 'http://';
-		
-		foreach ($targetFile as $theFile) {
-          if (file_exists($mediaDir."$theFile")) {
-			 $targetFiles[] = urlencode($schema.$_SERVER['SERVER_NAME'].$dirPrefix."/data/_uploaded/media/$theFile"); //$SITEURL - JOHANNES kyk huier
-          }
-		}  
-		$options['bgcolor'] = $bgColor;
-		$class = $this->activeExtendClassName;
-		$mp3player = @new $class();
-		return  $mp3player->AddPlayer($pluginBasePath,$targetFiles,$options,$dit_ap_playerID);
+		if (isset($this->activeExtendFileName)) {
+			require_once($addonPathCode.'/dominion-mp3player/plugins/'.$this->activeExtendFileName);
+			
+			$pluginBasePath = $addonRelativeCode."/dominion-mp3player/player/";
+			global  $dataDir,$dirPrefix;
+			$mediaDir = $dataDir.'/data/_uploaded/media/';		  //JI?HaNNEs TRKE VAN LEER
+			$schema = ( isset($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) == 'on' ) ? 'https://' : 'http://';
+			$targetFiles = array();
+			foreach ($targetFile as $theFile) {
+			  if (file_exists($mediaDir."$theFile")) {
+				 $targetFiles[] = urlencode($schema.$_SERVER['SERVER_NAME'].$dirPrefix."/data/_uploaded/media/$theFile"); //$SITEURL - JOHANNES kyk huier
+			  }
+			}  
+			$options['bgcolor'] = $bgColor;
+			$class = $this->activeExtendClassName;
+			$mp3player = @new $class();
+			return  $mp3player->AddPlayer($pluginBasePath,$targetFiles,$options,$dit_ap_playerID);
+		} else {
+		  return "";
+		}	
    }
    
    public function getPluginsInfo(){
@@ -99,15 +104,19 @@ class DominionMp3Player {
 	  $cfgSettings = parse_ini_file($cfgPath);
 	  $this->activeExtendFileName = $cfgSettings['player'];
 	  $this->activeExtendClassName = $cfgSettings['playerclass'];
-	  if ($cfgSettings['usejquery'] == '1') {
+	  if (($cfgSettings['usejquery'] == '1') && (!common::LoggedIn())) {
 	    global $page;
 	   $page->head .= "<script type='text/javascript' src='{$pluginPath}/jquery-1.6.2.min.js'></script>";
 	  }
-      require_once($addonPathCode.'/dominion-mp3player/plugins/'.$this->activeExtendFileName);
-      $class = $this->activeExtendClassName;
+	  
+	  
+	  if (isset($this->activeExtendFileName)) {
+        require_once($addonPathCode.'/dominion-mp3player/plugins/'.$this->activeExtendFileName);
+        $class = $this->activeExtendClassName;
 		$mp3player = @new $class();
 		$mp3player->Player_Extention_Header($pluginPath);
 		unset($mp3player);
+	  } 	
    }
 
 }
