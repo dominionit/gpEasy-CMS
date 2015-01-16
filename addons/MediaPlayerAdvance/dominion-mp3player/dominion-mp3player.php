@@ -41,7 +41,7 @@ class DominionMp3Player {
 		   
 		   $targetFiles = explode(';',$targetMp3);  //for multiple files
 		   
-		  $adTeks = $this->playerAdd($targetFiles,$bgColor,$dit_ap_playerID);
+		  $adTeks = $this->playerAdd($targetFiles,$cfgSettings,$dit_ap_playerID);
 		  $targetMp3= str_replace('/','\/',$targetMp3);
 		  $tmpContent = preg_replace("/\(%(.*)mp3(.*):(.*)$targetMp3(.*)%\)/i",$adTeks,$tmpContent);
 		}
@@ -49,7 +49,7 @@ class DominionMp3Player {
 	  return $tmpContent;  
   } 
   
-   private function playerAdd($targetFile,$bgColor){
+   private function playerAdd($targetFile,$cfgSettings){
        //error_log('TARGET FILE : '.print_r($targetFile,true));
 		global $addonPathCode,$addonRelativeCode;
 		global $dit_ap_playerID;
@@ -70,10 +70,9 @@ class DominionMp3Player {
 				 $targetFiles[] = urlencode($schema.$_SERVER['SERVER_NAME'].$dirPrefix."/data/_uploaded/media/$theFile"); //$SITEURL - JOHANNES kyk huier
 			  }
 			}  
-			$options['bgcolor'] = $bgColor;
 			$class = $this->activeExtendClassName;
 			$mp3player = @new $class();
-			return  $mp3player->AddPlayer($pluginBasePath,$targetFiles,$options,$dit_ap_playerID);
+			return  $mp3player->AddPlayer($pluginBasePath,$targetFiles,$cfgSettings,$dit_ap_playerID);
 		} else {
 		  return "";
 		}	

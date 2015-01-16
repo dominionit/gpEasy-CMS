@@ -1,10 +1,10 @@
 ;Note this is a registration file for a mp3 extention. 
 ;do not change the case of the key's or names as it is used internally in a array
 ;just add your values to them for registration.
-name=Dr Player - Dev Reactor
-screenshot=drplayer.jpg
-description=DR Player from http://devreactor.com/projects/drplayer
-classname=DominionMp3Player_DrPlayer
-filename=dominion-mp3-drplayer-extend.php
+name=MP3 Player Mini
+screenshot=mini.jpg
+description=The  mp3 player mini with smallest KB size - http://flash-mp3-player.net/players/mini/
+classname=DominionMp3Player_MiniPlayer
+filename=dominion-mp3-player_mini-extend.php
 author=Johannes Pretorius
 version=0.1

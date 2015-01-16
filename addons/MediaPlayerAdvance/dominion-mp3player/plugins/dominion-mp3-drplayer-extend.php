@@ -5,6 +5,7 @@ Description: DR Player Extention
 Version: 0.1a
 Author: Dev Reactor (converter Johannes Pretorius)
 Author URI: http://www.dominion-it.co.za/
+Player Developer URI : 
 */
 defined('is_running') or die('Not an entry point...');
 global $addonPathCode;
@@ -18,16 +19,22 @@ class DominionMp3Player_DrPlayer extends DominionMp3Player_ExtentionBase {
 	 
    public function AddPlayer($pluginBasePath,$targetFiles,$options,&$ap_playerID){
         $bgColor =  $options['bgcolor'];
+		$wydte = $options['wydte'];
+		$hoogte = $options['hoogte'];
 		$player      ='';
 		$player = '<div id="dr_playlist" class="dr_playlist">';
         foreach ($targetFiles as $targetFile) {
            $fname = basename(urldecode($targetFile));
 		   $fname = str_replace('-',' ',$fname);
-		   $fname = ucwords($fname);
-          $player      .= '<div href="'.$targetFile.'" style="width: 400px;" class="item">';
-          $player      .= '<div>                <div class="fr duration">.</div>';
-          $player      .= '<div class="btn play"></div> <div class="title">'.$fname.'</div>';
-          $player      .= '</div>            <div class="player inactive"></div>        </div>';
+		   $fname = str_replace('_',' ',$fname);
+		   $fname = ucwords(basename($fname, '.mp3'));
+
+			  $player      .= '<div href="'.$targetFile.'" style="width: '.$wydte.'px;" class="item" id="player'.$ap_playerID.'">';
+			  $player      .= '<div>                <div class="fr duration">.</div>';
+			  $player      .= '<div class="btn play" style="padding:0px 0px;"></div> <div class="title">'.$fname.'</div>';
+			  $player      .= '</div>            <div class="player inactive"></div>        </div>';
+
+			  $ap_playerID++;
 	   }
      $player .= '</div">';	   
       return $player;

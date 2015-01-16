@@ -28,8 +28,13 @@ class Admin_MediaPlayerAdvance{
 	 }
     if(isset($_POST['stoor']) && $_POST['stoor'] == 'Save') {
             $color  = $_POST['kleur'] ;
+			$wydte  = $_POST['wydte'] ;
+			$hoogte  = $_POST['hoogte'] ;
+			
+			
 			$player  = $_POST['playertouse'];
 			$usejquery = isset($_POST['usejquery'])?'1':'0';
+			$loop =  isset($_POST['loop'])?'1':'0';
 			foreach ($plugins as $extend){
 			  if ( $extend['filename'] == $player) {
 			    $playerclass  = $extend['classname'] ;     
@@ -38,22 +43,36 @@ class Admin_MediaPlayerAdvance{
 			
             $filePointer = fopen($savePath,"w");
             fwrite($filePointer,"bgcolor=$color \n\r");
+			fwrite($filePointer,"wydte=$wydte \n\r");
+			fwrite($filePointer,"hoogte=$hoogte \n\r");
+			
+			
 			fwrite($filePointer,"player=$player \n\r");
 			fwrite($filePointer,"playerclass=$playerclass \n\r");
 			fwrite($filePointer,"playerclass=$playerclass \n\r");
-			fwrite($filePointer,"usejquery=$usejquery \n\r"); //removed jquery breaks gpEasy
+			fwrite($filePointer,"usejquery=$usejquery \n\r"); 
+			fwrite($filePointer,"loop=$loop \n\r"); 
             fclose($filePointer);
             unset($tmpS,$filePointer);    
 			$usejquery =  isset($_POST['usejquery'] )?'checked="checked"':'';
+			$loop =  isset($_POST['loop'] )?'checked="checked"':'';
     }    else {
       if (is_file($savePath )) {
 	    $cfgSettings = parse_ini_file($savePath );
 		$player  = $cfgSettings['player'];
 	    $color = $cfgSettings['bgcolor'];
+		$wydte = $cfgSettings['wydte'];
+		$hoogte = $cfgSettings['hoogte'];
+		
+		
         $usejquery = ($cfgSettings['usejquery'] == '1')?'checked="checked"':'';
+		$loop = ($cfgSettings['loop'] == '1')?'checked="checked"':'';
       } else {
         $color = '#FFFFFF';
+		$wydte = 250;
+		$hoogte = 40;
 		$usejquery = '';
+		$loop = '';
       }
       
     }
@@ -96,11 +115,14 @@ class Admin_MediaPlayerAdvance{
 	 <br/>
 	 For example : (% mp3:My personal Song.mp3;OtherSong.mp3;Another One.mp3 %)<br/>
 	 <br/>
-     Version 1.1<br/>
+     Version 1.2<br/>
 	 Note : Future versions will have beter config for the filenames and playlists.</p>
  <p>
   Use jQuery : <input type='checkbox' name='usejquery' value='1' <?php echo $usejquery; ?>><br/>  
+  Auto play music : <input type='checkbox' name='loop' value='1' <?php echo $loop; ?>><br/>  
  Background color : <input type='text' name='kleur' value='<?php echo $color; ?>'> (hex color)<br/>
+ Width : <input type='text' name='wydte' value='<?php echo $wydte; ?>'> <br/>
+ Height : <input type='text' name='hoogte' value='<?php echo $hoogte; ?>'> <br/>
     Player to Use : <select name='playertouse' id='playertouse'><?php echo $players;?></select></br>
 	
     <input type='submit' name='stoor' value='Save'>
